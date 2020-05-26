@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <textarea id="private_key_sender" placeholder="개인키" rows="13" cols="65"></textarea>
+    <input type="button" id="prvKeygenBtn" value="개인키 랜덤생성"> <br>
+    보내는 사람의 개인키 입력 <br><br>
+    <textarea id="public_key_receiver" placeholder="공개키" rows="4" cols="65"></textarea>
+    <input type="button" id="pubKeygenBtn" value="공개키 랜덤생성"> <br>
+    받는 사람의 공개키 입력 <br><br>
+    <input type="number" id="amount" placeholder="보낼 금액" style="width:485px">보낼 금액<br>
+    <input type="number" id="fee" placeholder="수수료" style="width:485px">수수료<br><br>
+    uuid : <span id="span_uuid"></span><br>
+    <textarea id="signature" placeholder="사인" rows="5" cols="65"></textarea>
+    <input type="button" id="signBtn" value="사인">
+    <input type="button" id="validateBtn" value="사인 확인"> <br>
+
+    <input type="button" id="getBlockDataBtn" value="getBlockData">
+    <input type="button" id="generateBlockBtn" value="generateBlock">
+    <input type="button" id="newTxBtn" value="newTx">
+    <input type="button" id="checkBalanceBtn" value="잔액 확인">
+    <br>
+    <span id = "output_area"></span>
+
+  </body>
+  <script>
+  console.log(location.href)
+
+    $("#signBtn").click(function(){
+
+      $.ajax({
+        url:"/sign",
+        dataType:"json",
+        type:'POST',
+        data:{
+            "sender":$("#private_key_sender").val(),
+		        "receiver":$("#public_key_receiver").val(),
+	          "amount":$("#amount").val(),
+            "fee":$("#fee").val()
+        },
+        success:function(response){
+          console.log(response)
+          $("#signature").val(response.signature)
+          $("#span_uuid").html(response.uuid)
+          $("#output_area").html(response.msg)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+
+    })
+
+
+    $("#validateBtn").click(function(){
+
+      $.ajax({
+        url:"/validateSign",
+        dataType:"json",
+        type:'POST',
+        data:{
+            "sender":$("#private_key_sender").val(),
+		        "receiver":$("#public_key_receiver").val(),
+	          "amount":$("#amount").val(),
+            "fee":$("#fee").val(),
+            "uuid":$("#span_uuid").html(),
+            "signature":$("#signature").val()
+        },
+        success:function(response){
+          $("#output_area").html(response.validity)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+
+    })
+
+
+
+
+    $("#getBlockDataBtn").click(function(){
+
+      $.ajax({
+        url:"/block/getBlockData",
+        dataType:"json",
+        type:'GET',
+        success:function(response){
+          console.log(response)
+
+          $("#output_area").html(" ")
+
+          for(var i=0; i<response.length; i++){
+            $("#output_area").append("index : "+response[i].index+"<br>")
+            $("#output_area").append("previous hash : "+response[i].previous_hash+"<br>")
+            $("#output_area").append("current hash : "+response[i].current_hash+"<br>")
+            $("#output_area").append("timestamp : "+response[i].time_stamp+"<br>")
+            $("#output_area").append("proof : "+response[i].proof+"<br>")
+            $("#output_area").append("transaction data : ")
+            var tx = response[i].tx_data.split(" |")
+            if(tx.length==1){$("#output_area").append("Genesis Block<br>")}
+            for(j=0; j<tx.length-1; j++){
+              txlist = tx[j].split(", ")
+              $("#output_area").append("<br>--------  transaction "+j+" --------<br>|    uuid : "+txlist[0]+"<br>")
+              $("#output_area").append("|    sender : "+txlist[1]+"<br>")
+              $("#output_area").append("|    receiver : "+txlist[3]+"<br>")
+              $("#output_area").append("|    amount : "+txlist[2]+"<br>")
+              $("#output_area").append("|    fee : "+txlist[4]+"<br>")
+            }
+
+            // $("#output_area").append("transaction data : "+response[i].tx_data+"<br>")
+            $("#output_area").append("---------------------------------------------<br><br>")
+          }
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+    $("#newTxBtn").click(function(){
+
+      $.ajax({
+        url:"/block/newtx",
+        dataType:"json",
+        type:'POST',
+        // headers:{'Content-type':'application/json'},
+        data:{
+            "sender":$("#private_key_sender").val(),
+		        "receiver":$("#public_key_receiver").val(),
+	          "amount":$("#amount").val(),
+            "fee":$("#fee").val(),
+            "uuid":$("#span_uuid").html(),
+            "signature":$("#signature").val()
+        },
+        success:function(response){
+          console.log(response)
+          $("#output_area").html(response.msg)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+    $("#checkBalanceBtn").click(function(){
+
+      $.ajax({
+        url:"/checkBalance",
+        dataType:"json",
+        type:'POST',
+        // headers:{'Content-type':'application/json'},
+        data:{
+            "sender":$("#private_key_sender").val()
+        },
+        success:function(response){
+          console.log(response)
+          $("#output_area").html(response.msg)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+
+    $("#generateBlockBtn").click(function(){
+
+      $.ajax({
+        url:"/block/generateBlock",
+        dataType:"json",
+        type:'POST',
+        data:{
+            "miner":$("#private_key_sender").val()
+        },
+        success:function(response){
+          console.log(response)
+          $("#output_area").html(response.msg)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+
+    $("#prvKeygenBtn").click(function(){
+
+      $.ajax({
+        url:"/getPrivateKey",
+        dataType:"text",
+        type:'GET',
+        success:function(response){
+          console.log(response)
+          $("#private_key_sender").val(response)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+    $("#pubKeygenBtn").click(function(){
+
+      $.ajax({
+        url:"/getPublicKey",
+        dataType:"text",
+        type:'GET',
+        success:function(response){
+          console.log(response)
+          $("#public_key_receiver").val(response)
+        },
+        error:function(response, axd, axs){
+          console.log(axd)
+        }
+      })
+    })
+
+
+
+
+  </script>
+</html>
