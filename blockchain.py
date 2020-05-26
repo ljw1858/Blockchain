@@ -21,6 +21,7 @@ from Crypto.PublicKey import RSA  # for rsa verification
 from base64 import b64encode, b64decode  # for rsa verification (string public key to public key object)
 from multiprocessing import Process, Lock  # for using Lock method(acquire(), release())
 # 체크 확인용 (0526)
+# check pull Reqeuest (성훈) 0526
 # for Put Lock objects into variables(lock)
 lock = Lock()
 
